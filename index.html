@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Claude Code Web — بيئة تطوير ذكية</title>
+<meta name="description" content="واجهة ويب لـ Claude Code: محادثة، مهارات، إضافات، وكلاء، مزودون، ملفات، ومتصفح.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+</head>
+<body>
+<div class="blob blob-1" aria-hidden="true"></div>
+<div class="blob blob-2" aria-hidden="true"></div>
+
+<div id="app">
+  <!-- ===== Top bar ===== -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="cloud-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="30" height="30"><defs><linearGradient id="cloudg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdba74"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#cloudg)"/></svg>
+      </span>
+      <strong>Claude Code</strong>
+    </div>
+    <div class="topbar-actions">
+      <div class="tb-item">
+        <button id="conn-pill" class="conn-pill" title="حالة الاتصال — اضغط للفحص">
+          <span id="conn-label">غير متصل</span>
+        </button>
+        <button class="tb-info" data-info="conn" aria-label="شرح">ⓘ</button>
+      </div>
+      <div class="tb-item">
+        <button id="wake-btn" class="wake-btn" title="إيقاظ الساندبوكس">
+          <span class="wake-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="13" r="7.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 9.5V13l2.5 1.5M9 3.5L6.5 6M15 3.5l2.5 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span id="wake-label">إيقاظ</span>
+        </button>
+        <button class="tb-info" data-info="wake" aria-label="شرح">ⓘ</button>
+      </div>
+      <div class="tb-item">
+        <button id="stop-btn-top" class="wake-btn stop" title="إطفاء الساندبوكس">
+          <span class="wake-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span id="stop-label">إطفاء</span>
+        </button>
+        <button class="tb-info" data-info="stop" aria-label="شرح">ⓘ</button>
+      </div>
+      <div class="tb-item">
+        <button id="notify-btn" class="icon-btn" title="الإشعارات" aria-label="تبديل الإشعارات">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 0 1-3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="tb-info" data-info="notify" aria-label="شرح">ⓘ</button>
+      </div>
+      <div class="tb-item">
+        <button id="settings-btn" class="icon-btn" title="الإعدادات" aria-label="الإعدادات">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09A1.7 1.7 0 0 0 10.11 3V3a2 2 0 1 1 4 0v.09c0 .68.4 1.3 1.01 1.56a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09c.26.61.88 1.01 1.56 1.01H21a2 2 0 1 1 0 4h-.09c-.68 0-1.3.4-1.51 1.01z" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <button class="tb-info" data-info="settings" aria-label="شرح">ⓘ</button>
+      </div>
+      <div id="tb-pop" class="tb-pop hidden"></div>
+    </div>
+  </header>
+
+  <div id="layout">
+    <!-- ===== Side nav (right in RTL) ===== -->
+    <nav id="sidenav" aria-label="التنقل">
+      <button class="nav-btn" data-view="chat" title="المحادثة">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+        <span>المحادثة</span>
+      </button>
+      <button class="nav-btn active" data-view="files" title="الملفات">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M16 16l-4-4-4 4M12 12v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.4 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 5 15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <span>الملفات</span>
+      </button>
+      <button class="nav-btn" data-view="providers" title="المزودون">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><ellipse cx="12" cy="5.5" rx="8" ry="2.8" stroke="currentColor" stroke-width="1.8"/><path d="M4 5.5V12c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V5.5M4 12v6.5c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V12" stroke="currentColor" stroke-width="1.8"/></svg></span>
+        <span>المزودون</span>
+      </button>
+      <button class="nav-btn" data-view="agents" title="الوكلاء">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 14.6A4.5 4.5 0 0 1 21 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <span>الوكلاء</span>
+      </button>
+      <button class="nav-btn" data-view="plugins" title="الإضافات">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1M9 12h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <span>الإضافات</span>
+      </button>
+      <button class="nav-btn" data-view="skills" title="المهارات">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M9 3v6L4.5 18a2.4 2.4 0 0 0 2.1 3.6h10.8a2.4 2.4 0 0 0 2.1-3.6L15 9V3M8 3h8M7.5 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>المهارات</span>
+      </button>
+      <button class="nav-btn" data-view="terminal" title="الطرفية">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 9l3 3-3 3M12 15h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>الطرفية</span>
+      </button>
+      <button class="nav-btn" data-view="environment" title="البيئة">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><rect x="3" y="3" width="18" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="18" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 6.5h.01M7 17.5h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+        <span>البيئة</span>
+      </button>
+      <button class="nav-btn" data-view="browser" title="المتصفح">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c2.5 2.6 3.9 5.7 3.9 9S14.5 18.4 12 21c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z" stroke="currentColor" stroke-width="1.8"/></svg></span>
+        <span>المتصفح</span>
+      </button>
+      <button class="nav-btn" data-view="live" title="مباشر">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="12" cy="12" r="3" fill="#ef4444"/><path d="M12 5a7 7 0 0 1 7 7M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 5a7 7 0 0 0-7 7M12 2a10 10 0 0 0-10 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <span>مباشر</span>
+      </button>
+      <button class="nav-btn" data-view="__settings__" title="الإعدادات">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09A1.7 1.7 0 0 0 10.11 3V3a2 2 0 1 1 4 0v.09c0 .68.4 1.3 1.01 1.56a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09c.26.61.88 1.01 1.56 1.01H21a2 2 0 1 1 0 4h-.09c-.68 0-1.3.4-1.51 1.01z" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span>الإعدادات</span>
+      </button>
+    </nav>
+
+    <!-- ===== Main ===== -->
+    <main id="main">
+      <!-- Chat view -->
+      <section class="view" id="view-chat">
+        <div id="chat-head">
+          <div class="chat-head-info">
+            <h2>المحادثة</h2>
+            <span id="mode-label" class="mode-label">وضع كلاود</span>
+          </div>
+          <div class="chat-head-btns">
+            <label class="model-picker-wrap" title="اختيار النموذج">
+              <select id="model-picker" aria-label="اختيار النموذج"></select>
+            </label>
+            <button id="new-chat-btn" class="ghost-btn" title="بدء محادثة جديدة">＋ جديدة</button>
+            <button id="del-chat-btn" class="ghost-btn danger" title="حذف المحادثة الحالية">🗑 حذف</button>
+            <button id="sessions-btn" class="ghost-btn" title="المحادثات المحفوظة">المحادثات</button>
+            <button id="relay-btn" class="relay-btn" title="الاتصال المباشر عبر وسيط كلاود">
+              <span class="relay-dot"></span><span id="relay-label">تشغيل كلاود</span>
+            </button>
+          </div>
+        </div>
+        <div id="mode-bar">
+          <span id="mode-desc">يعمل عبر وسيط كلاود — لا حاجة لأي إعدادات</span>
+          <span id="model-line" class="model-line hidden"></span>
+          <button id="mode-toggle" class="link-btn">استخدام endpoint خاص</button>
+        </div>
+        <div id="messages" aria-live="polite"></div>
+        <div id="chat-drop" class="chat-drop hidden" aria-hidden="true">
+          <div class="chat-drop-inner">
+            <span class="chat-drop-ico"><svg viewBox="0 0 24 24" width="46" height="46" fill="none"><path d="M16 16l-4-4-4 4M12 12v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.4 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 5 15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <p>أفلت الملفات هنا</p>
+            <small>ستُرفق برسالتك مباشرة</small>
+          </div>
+        </div>
+        <div id="skill-chip" class="hidden"></div>
+        <div id="attach-chips"></div>
+        <div id="slash-wrap">
+          <div id="slash-list" class="hidden" role="listbox" aria-label="المهارات"></div>
+        </div>
+        <div id="composer">
+          <div class="composer-top">
+            <div class="build-seg" role="tablist" aria-label="وضع التنفيذ">
+              <button id="mode-plan" class="build-seg-btn active" role="tab" aria-selected="true">📋 خطة</button>
+              <button id="mode-build" class="build-seg-btn" role="tab" aria-selected="false">🔨 بناء</button>
+            </div>
+            <span id="build-mode-hint" class="build-hint">يرد بخطة مفصلة فقط — دون تنفيذ</span>
+          </div>
+          <div class="composer-main">
+            <button id="attach-btn" class="icon-btn" title="إرفاق ملف" aria-label="إرفاق ملف">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M21.4 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.82-2.83l8.49-8.48" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <textarea id="chat-input" rows="1" placeholder="صف ما تريد… (اكتب / لاستدعاء مهارة)" aria-label="رسالة"></textarea>
+            <button id="send-btn" class="send-btn" title="إرسال" aria-label="إرسال">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button id="stop-btn" class="send-btn stop hidden" title="إيقاف" aria-label="إيقاف">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hint-bar">اكتب <kbd>/</kbd> لاستدعاء مهارة · <kbd>Enter</kbd> للإرسال · <kbd>Shift+Enter</kbd> لسطر جديد</div>
+      </section>
+
+      <!-- Home / Files view (matches the mockup) -->
+      <section class="view active" id="view-files">
+        <div class="home-scroll">
+          <div class="hero">
+            <span class="cloud-logo hero-cloud" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="76" height="76"><defs><linearGradient id="cloudg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdba74"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#cloudg2)"/></svg>
+            </span>
+            <h1>Claude Code Web</h1>
+            <p>بيئة تطوير ذكية، مباشرة وبلا تعقيد</p>
+          </div>
+
+          <div id="dropzone" tabindex="0" role="button" aria-label="رفع ملفات">
+            <div class="dz-inner">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="none"><path d="M16 16l-4-4-4 4M12 12v9" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.4 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 5 15.3" stroke="#f97316" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <p>اسحب الملفات هنا أو <button class="link-btn" id="browse-btn">اختر من جهازك</button></p>
+              <small>تبقى الملفات في متصفحك فقط – لا ترفع أي خادم</small>
+              <input type="file" id="file-input" multiple hidden>
+            </div>
+          </div>
+          <div id="files-list" class="files-list"></div>
+
+          <div class="section-head"><h2>الإضافات</h2><span class="orange-dot"></span></div>
+          <div class="plugin-card" id="home-plugins"></div>
+
+          <footer class="home-footer">
+            <span class="cloud-logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="#f97316"/></svg>
+            </span>
+            <span>Powered by <b>Claude</b></span>
+          </footer>
+        </div>
+      </section>
+
+      <!-- Skills view -->
+      <section class="view" id="view-skills">
+        <div class="view-head">
+          <h2>المهارات <span class="count" id="skills-count"></span></h2>
+          <input id="skills-search" class="search" type="search" placeholder="ابحث عن مهارة…">
+        </div>
+        <p class="view-sub">المهارات المثبتة فعليًا في الساندبوكس — تُجلب مباشرة من البيئة. اكتب <kbd>/</kbd> في المحادثة أو اضغط «استخدام».</p>
+        <div class="cards" id="skills-grid"></div>
+      </section>
+
+      <!-- Plugins view -->
+      <section class="view" id="view-plugins">
+        <div class="view-head"><h2>الإضافات</h2></div>
+        <p class="view-sub">إضافات Claude Code — فعّل أو عطّل ما تشاء (يُحفظ محليًا).</p>
+        <div class="cards" id="plugins-grid"></div>
+      </section>
+
+      <!-- Agents view -->
+      <section class="view" id="view-agents">
+        <div class="view-head"><h2>الوكلاء</h2></div>
+        <p class="view-sub">وكلاء حقيقيون عبر وسيط كلاود — اكتب المهمة واضغط «تشغيل» وستتدفق النتيجة مباشرة.</p>
+        <div class="cards" id="agent-types"></div>
+        <h3 class="sub-h">الجلسات النشطة <span class="count" id="sessions-count">0</span></h3>
+        <div id="sessions-list" class="sessions"><p class="empty">لا توجد جلسات بعد — أنشئ وكيلًا من الأعلى.</p></div>
+      </section>
+
+      <!-- Providers view -->
+      <section class="view" id="view-providers">
+        <div class="view-head">
+          <h2>المزودون</h2>
+          <div class="row">
+            <button id="providers-restore" class="ghost-btn" title="إعادة تسجيل المزودين المحفوظين في ساندبوكس جديد">↻ استعادة المزودين</button>
+            <button id="providers-refresh" class="ghost-btn">تحديث الحالة</button>
+          </div>
+        </div>
+        <p class="view-sub">احصل على مفتاح API من الموقع الرسمي لكل مزود، الصقه في بطاقته، واضغط «إضافة» — سيعمل مباشرة داخل الساندبوكس.</p>
+        <h3 class="sub-h">المزودون المضافون <span class="count" id="user-providers-count">0</span></h3>
+        <div class="cards" id="user-providers-grid"><p class="empty" id="user-providers-empty">لم تضف أي مزود بعد — أضف مفتاحك من البطاقات أدناه.</p></div>
+        <h3 class="sub-h">إضافة مزود جديد <span class="count" id="providers-count"></span></h3>
+        <div class="cards" id="providers-grid"></div>
+      </section>
+
+      <!-- Terminal view -->
+      <section class="view" id="view-terminal">
+        <div class="view-head">
+          <h2>الطرفية</h2>
+          <button id="term-log-btn" class="ghost-btn">عرض سجل النشاط</button>
+        </div>
+        <p class="view-sub">نفّذ أوامر مباشرة في الساندبوكس — شاهد بنفسك ماذا يفعل Claude Code.</p>
+        <div class="term-wrap">
+          <div id="term-output" class="term-output" aria-live="polite"></div>
+          <div class="term-input-row">
+            <span class="term-prompt" dir="ltr">$</span>
+            <input id="term-input" class="term-input mono" dir="ltr" type="text" placeholder="اكتب أمرًا…" autocomplete="off" spellcheck="false" aria-label="أمر الطرفية">
+            <button id="term-exec" class="primary-btn">تنفيذ</button>
+          </div>
+          <p class="term-warn">الأوامر تُنفَّذ في بيئة GitHub Codespace بمهلة 30 ثانية.</p>
+        </div>
+      </section>
+
+      <!-- Environment view -->
+      <section class="view" id="view-environment">
+        <div class="view-head">
+          <h2>البيئة</h2>
+          <div class="row">
+            <button id="migrate-btn" class="primary-btn" title="ترحيل كامل لساندبوكس جديد: نسخ احتياطي ← إنشاء ← استعادة">⇄ ترحيل لساندبوكس جديد</button>
+            <button id="env-refresh" class="ghost-btn">تحديث</button>
+          </div>
+        </div>
+        <p class="view-sub">بيانات حقيقية ومباشرة عن البيئة التي يعمل فيها Claude Code — لا شيء هنا مُختلَق.</p>
+        <div id="migrate-status" class="migrate-status hidden"></div>
+        <div id="env-stats" class="env-stats"></div>
+      </section>
+
+      <!-- Browser view -->
+      <section class="view" id="view-browser">
+        <div class="browser-bar">
+          <button id="browser-back" class="icon-btn" title="رجوع" aria-label="رجوع"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="browser-fwd" class="icon-btn" title="تقدم" aria-label="تقدم"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="browser-reload" class="icon-btn" title="تحديث" aria-label="تحديث"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <input id="browser-url" class="url-bar mono" type="url" value="https://example.com" dir="ltr" aria-label="عنوان الموقع">
+          <button id="browser-go" class="ghost-btn">انتقال</button>
+        </div>
+        <div class="browser-note" id="browser-note">لمعاينة مواقعك المبنية — بعض المواقع تمنع العرض داخل إطار.</div>
+        <iframe id="browser-frame" title="معاينة المتصفح" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      </section>
+
+      <!-- Live view: sandbox browser screenshots + worker activity -->
+      <section class="view" id="view-live">
+        <div class="view-head">
+          <h2>مباشر — متصفح الساندبوكس</h2>
+          <span class="live-indicator"><span class="live-dot"></span>مباشر</span>
+        </div>
+        <p class="view-sub">لقطات حية من متصفح الساندبوكس وسجل نشاط العامل — كل شيء حقيقي ومباشر.</p>
+        <div class="live-grid">
+          <div class="live-panel live-browser-panel">
+            <div class="live-panel-head">
+              <h3>متصفح الساندبوكس</h3>
+              <label class="live-toggle"><input type="checkbox" id="live-auto-shot"> تحديث تلقائي</label>
+            </div>
+            <!-- Real browser window -->
+            <div class="browser-window">
+              <div class="bw-tabbar">
+                <div class="bw-traffic"><span class="bw-dot r"></span><span class="bw-dot y"></span><span class="bw-dot g"></span></div>
+                <div class="bw-tab"><span class="bw-tab-ico">🌐</span><span id="bw-tab-title">علامة تبويب جديدة</span><span class="bw-tab-x">✕</span></div>
+                <button class="bw-newtab" title="تبويب جديد">＋</button>
+              </div>
+              <div class="bw-navbar">
+                <button class="bw-navbtn" id="bw-reload" title="تحديث">⟳</button>
+                <div class="bw-addressbar"><span class="bw-lock">🔒</span><input id="live-url" class="bw-url-input mono" type="url" dir="ltr" placeholder="اكتب الرابط هنا…" aria-label="رابط اللقطة"></div>
+                <button id="live-capture-btn" class="bw-go">التقاط</button>
+              </div>
+              <div class="bw-viewport" id="live-shot-frame">
+                <div class="bw-empty" id="live-shot-empty">
+                  <div class="bw-empty-ico">🖥️</div>
+                  <p>اكتب رابطًا في شريط العناوين بالأعلى<br>واضغط «التقاط» لرؤية متصفح الساندبوكس حيًا</p>
+                </div>
+                <img id="live-shot-img" class="hidden" alt="لقطة متصفح الساندبوكس">
+                <div class="bw-loading hidden" id="bw-loading"><span class="bw-spinner"></span> جارٍ التحميل من الساندبوكس…</div>
+              </div>
+              <div class="bw-statusbar"><span class="live-dot sm"></span><span id="live-shot-meta">جاهز</span><span class="bw-dim" id="bw-size"></span></div>
+            </div>
+            <div class="live-shot-bar hidden">
+              <span></span>
+            </div>
+          </div>
+          <div class="live-panel">
+            <div class="live-panel-head">
+              <h3>سجل النشاط المباشر</h3>
+              <button id="live-activity-refresh" class="ghost-btn">تحديث</button>
+            </div>
+            <div id="live-jobs" class="live-jobs"></div>
+            <h4 class="live-log-title">سجل العامل</h4>
+            <pre id="live-log" class="live-log" dir="ltr"></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== Mobile bottom nav ===== -->
+  <nav id="mobile-nav" aria-label="التنقل">
+    <button class="mnav-btn active" data-view="files" aria-label="الرئيسية">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="mnav-btn" data-view="chat" aria-label="المحادثة">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="mnav-btn" data-view="agents" aria-label="الوكلاء">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 14.6A4.5 4.5 0 0 1 21 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="mnav-btn" data-view="terminal" aria-label="الطرفية">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 9l3 3-3 3M12 15h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="mnav-btn" data-view="providers" aria-label="المزودون">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="mnav-btn" data-view="live" aria-label="مباشر">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="12" cy="12" r="3" fill="#ef4444"/><path d="M12 5a7 7 0 0 1 7 7M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 5a7 7 0 0 0-7 7M12 2a10 10 0 0 0-10 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </nav>
+</div>
+
+<!-- ===== Sessions drawer ===== -->
+<div id="drawer-backdrop" class="drawer-backdrop hidden"></div>
+<aside id="sessions-drawer" class="drawer hidden" aria-label="المحادثات المحفوظة">
+  <div class="drawer-head">
+    <h2>المحادثات</h2>
+    <button id="drawer-close" class="icon-btn" aria-label="إغلاق">✕</button>
+  </div>
+  <button id="new-session-btn" class="primary-btn full">＋ محادثة جديدة</button>
+  <div id="chat-sessions-list" class="sess-list"></div>
+</aside>
+
+<!-- ===== Settings modal ===== -->
+<div id="settings-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="الإعدادات">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>الإعدادات</h2>
+      <button id="settings-close" class="icon-btn" aria-label="إغلاق">✕</button>
+    </div>
+    <label class="field">
+      <span>نقطة نهاية API <small class="mono" dir="ltr">/v1</small></span>
+      <input id="set-endpoint" class="mono" dir="ltr" type="url" placeholder="https://…/v1">
+    </label>
+    <label class="field">
+      <span>مفتاح API <small>(يُحفظ في متصفحك فقط)</small></span>
+      <input id="set-key" type="password" dir="ltr" placeholder="••••••••" autocomplete="off">
+    </label>
+    <label class="field">
+      <span>مفتاح ربط الساندبوكس <small>(مرة واحدة — يُحفظ في متصفحك فقط)</small></span>
+      <input id="set-linkkey" type="password" dir="ltr" placeholder="الصقه من الساندبوكس: cat ~/.omniroute/relay.key" autocomplete="off">
+    </label>
+    <label class="field">
+      <span>النموذج</span>
+      <select id="set-model" dir="ltr"></select>
+    </label>
+    <div class="modal-actions">
+      <button id="settings-test" class="ghost-btn">اختبار الاتصال</button>
+      <button id="settings-save" class="primary-btn">حفظ</button>
+    </div>
+    <p id="settings-msg" class="settings-msg" role="status"></p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
