@@ -1809,15 +1809,27 @@ function setWakeUI(state){
   wakeBtn.disabled = false;
   if(state === 'running'){ wakeBtn.classList.add('running'); wakeLabel.textContent = 'يعمل'; }
   else if(state === 'waking'){ wakeBtn.classList.add('waking'); wakeLabel.textContent = 'يستيقظ…'; wakeBtn.disabled = true; }
-  else { wakeLabel.textContent = 'تشغيل'; wakeBtn.title = 'الساندبوكس مطفأ — اضغط للتشغيل من GitHub'; }
+  else { wakeLabel.textContent = 'تشغيل'; wakeBtn.title = 'الساندبوكس مطفأ — اضغط للتشغيل المباشر'; }
 }
+const WAKE_URL = 'https://wake-relay-cxp4.onrender.com';
 wakeBtn.addEventListener('click', async () => {
   if(sandboxDead || wakeLabel.textContent === 'تشغيل'){
-    // No tunnel can wake a stopped codespace — one click to GitHub Codespaces
-    window.open('https://github.com/codespaces', '_blank');
-    toast('شغّل الساندبوكس من GitHub — سيتصل الموقع تلقائيًا', 'ok');
+    // One-click wake: the Render wake service starts the codespace via GitHub API.
+    // (Render free sleeps when idle — first request may take ~50s to cold-start.)
+    setWakeUI('waking'); wakeLabel.textContent = 'يستيقظ…';
+    toast('جارٍ تشغيل الساندبوكس…', 'ok');
+    try{
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 90000);
+      const r = await fetch(WAKE_URL + '/wake', {method: 'POST', signal: ctl.signal});
+      clearTimeout(t);
+      const j = await r.json().catch(() => ({}));
+      if(j.state === 'Available'){ toast('الساندبوكس يعمل بالفعل', 'ok'); }
+      else if(j.state === 'starting'){ toast('بدأ التشغيل — سيتصل الموقع تلقائيًا', 'ok'); }
+      else { toast('تعذّر التشغيل: ' + (j.error || j.state || '؟'), 'err'); }
+    }catch(e){
+      toast('خدمة الإيقاظ لا ترد — حاول مجددًا بعد دقيقة', 'err');
+    }
     // watch for the new tunnel URL
-    setWakeUI('waking');
     for(let i = 0; i < 40; i++){
       await new Promise(r => setTimeout(r, 15000));
       const before = RELAY_URL;
@@ -1866,7 +1878,7 @@ if (stopTopBtn) stopTopBtn.addEventListener('click', async () => {
 /* ---------- ⓘ Button explanations ---------- */
 const TB_INFO = {
   conn: '«وضع كلاود»: طريقة اتصالك الحالية. طلباتك تمر عبر وسيط آمن إلى الساندبوكس — لا تحتاج أي إعدادات. اضغط الزر نفسه لفحص الاتصال.',
-  wake: 'حالة الساندبوكس الحقيقية الآن — تُفحص تلقائيًا كل دقيقة. أخضر «يعمل» = شغّال وجاهز. «إيقاظ» = مطفأ؛ اضغطه لتشغيله (يستغرق ~دقيقة).',
+  wake: 'حالة الساندبوكس الحقيقية الآن — تُفحص تلقائيًا كل دقيقة. أخضر «يعمل» = شغّال وجاهز. «تشغيل» = مطفأ؛ اضغطه فيشتغل مباشرة من هنا (يستغرق 1–3 دقائق).',
   stop: 'يطفئ الساندبوكس فعلًا لتوفير ساعاتك المجانية. ملفاتك محفوظة في GitHub ولن تضيع. أعد التشغيل بزر «إيقاظ».',
   notify: 'إشعارات المتصفح: تُعلمك عند اكتمال مهمة طويلة (رد كلاود كود، لقطة، ترحيل) حتى لو كنت في تبويب آخر.',
   settings: 'إعدادات الاتصال: نقطة النهاية (endpoint)، المفتاح، والنموذج الافتراضي — للحالات المتقدمة فقط.',
