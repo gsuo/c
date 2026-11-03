@@ -1924,8 +1924,33 @@ $('#settings-btn').addEventListener('click', openSettings);
 $('#settings-close').addEventListener('click', closeSettings);
 modal.addEventListener('click', e => { if(e.target === modal) closeSettings(); });
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && !modal.classList.contains('hidden')) closeSettings(); });
-$('#settings-save').addEventListener('click', () => {
-  settings.endpoint = $('#set-endpoint').value.trim() || '';
+/* ---------- Quick pairing: 6-char one-time code -> link key ---------- */
+$('#settings-pair').addEventListener('click', async () => {
+  const msg = $('#settings-msg');
+  const code = ($('#set-paircode').value || '').trim().toLowerCase();
+  if(!/^[0-9a-f]{6}$/.test(code)){ msg.className = 'settings-msg err'; msg.textContent = 'أدخل الرمز المكوّن من 6 أحرف'; return; }
+  msg.className = 'settings-msg'; msg.textContent = 'جارٍ الربط…';
+  try{
+    await refreshTunnelUrl();
+    if(!RELAY_URL) throw new Error('no-relay');
+    const res = await fetch(RELAY_URL.replace(/\/+$/,'') + '/pair', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code}),
+    });
+    const j = await res.json().catch(() => ({}));
+    if(!res.ok || !j.key) throw new Error(j.error || ('http-' + res.status));
+    localStorage.setItem('ccw_link_key', j.key);
+    $('#set-linkkey').value = ''; $('#set-paircode').value = '';
+    $('#set-linkkey').placeholder = '•••••••• (محفوظ)';
+    msg.className = 'settings-msg ok'; msg.textContent = 'تم الربط ✓ — الموقع متصل الآن';
+    toast('تم ربط الساندبوكس بنجاح', 'ok');
+    checkWakeStatus(); activateRelay();
+  }catch(e){
+    msg.className = 'settings-msg err';
+    msg.textContent = 'فشل الربط: ' + (e.message === 'no-relay' ? 'تعذّر الوصول للساندبوكس' : String(e.message || e));
+  }
+});
+$('#settings-save').addEventListener('click', () => {  settings.endpoint = $('#set-endpoint').value.trim() || '';
   settings.apiKey = $('#set-key').value;
   settings.model = $('#set-model').value;
   const lk = $('#set-linkkey').value.trim();

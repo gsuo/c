@@ -399,6 +399,13 @@
       <span>مفتاح ربط الساندبوكس <small>(مرة واحدة — يُحفظ في متصفحك فقط)</small></span>
       <input id="set-linkkey" type="password" dir="ltr" placeholder="الصقه من الساندبوكس: cat ~/.omniroute/relay.key" autocomplete="off">
     </label>
+    <div class="field">
+      <span>ربط سريع <small>(رمز مؤقت من المساعد — لمرة واحدة)</small></span>
+      <div style="display:flex;gap:8px">
+        <input id="set-paircode" dir="ltr" placeholder="6 أحرف" maxlength="6" autocomplete="off" style="flex:1;min-width:0">
+        <button id="settings-pair" class="ghost-btn" type="button">اربط</button>
+      </div>
+    </div>
     <label class="field">
       <span>النموذج</span>
       <select id="set-model" dir="ltr"></select>
