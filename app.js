@@ -1848,6 +1848,30 @@ checkWakeStatus();
 // indicator never lies (codespaces auto-sleep after 30 min idle).
 setInterval(() => { if(!document.hidden) checkWakeStatus(); }, 60000);
 
+/* ---------- Auto-pair from URL hash: #pair=XXXXXX ---------- */
+(async function autoPairFromHash(){
+  const m = (location.hash || '').match(/pair=([0-9a-f]{6})/i);
+  if(!m) return;
+  const code = m[1].toLowerCase();
+  history.replaceState(null, '', location.pathname + location.search);
+  if(linkKey()) return; // already paired
+  try{
+    await refreshTunnelUrl();
+    if(!RELAY_URL) throw new Error('no-relay');
+    const res = await fetch(RELAY_URL.replace(/\/+$/,'') + '/pair', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code}),
+    });
+    const j = await res.json().catch(() => ({}));
+    if(!res.ok || !j.key) throw new Error(j.error || ('http-' + res.status));
+    localStorage.setItem('ccw_link_key', j.key);
+    toast('تم ربط الساندبوكس تلقائيًا ✓', 'ok');
+    checkWakeStatus(); activateRelay();
+  }catch(e){
+    toast('فشل الربط التلقائي: ' + String(e.message || e), 'err');
+  }
+})();
+
 /* ---------- Stop sandbox (real: polls until actually shut down) ---------- */
 const stopTopBtn = $('#stop-btn-top'), stopLabel = $('#stop-label');
 if (stopTopBtn) stopTopBtn.addEventListener('click', async () => {
